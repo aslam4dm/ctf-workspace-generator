@@ -9,10 +9,10 @@ import sys
 
 def create_directory_structure(base_path, platform, ctf_names):
     directory_structure = {
-        "thm": ["Enumeration", os.path.join("Enumeration", "Autorecon"), "Loot", "Exploit", "Downloaded_Files", "Notes"],
-        "htb": ["Enumeration", os.path.join("Enumeration", "Autorecon"), "Exploit", "Report", "Downloaded_Files"],
-        "pgp": ["Enumeration", os.path.join("Enumeration", "Autorecon"), "Exploit", "Downloaded_Files"],
-        "vh": ["Enumeration", os.path.join("Enumeration", "Autorecon"), "Loot", "Exploit", "Downloaded_Files"]
+        "thm": ["Enumeration", os.path.join("Enumeration", "Autorecon"), "Loot", "Exploit", "Report", "Downloaded_Files", "Notes"],
+        "htb": ["Enumeration", os.path.join("Enumeration", "Autorecon"), "Loot", "Exploit", "Report", "Downloaded_Files", "Notes"],
+        "pgp": ["Enumeration", os.path.join("Enumeration", "Autorecon"), "Loot", "Exploit", "Report", "Downloaded_Files", "Notes"],
+        "vh": ["Enumeration", os.path.join("Enumeration", "Autorecon"), "Loot", "Exploit", "Report", "Downloaded_Files", "Notes"]
     }
 
     for ctf_name in ctf_names:
@@ -32,7 +32,7 @@ def create_directory_structure(base_path, platform, ctf_names):
                 directory_path = os.path.join(platform_path, directory)
                 os.makedirs(directory_path, exist_ok=True)
                 created_directories.append(directory_path)
-                time.sleep(0.2)  # 2-second delay between directory creations
+                time.sleep(0.3)  # 2-second delay between directory creations
                 pbar.update(1)
 
         print(f"{Fore.GREEN}Directories created for {ctf_name} under {platform}:{Style.RESET_ALL}")
