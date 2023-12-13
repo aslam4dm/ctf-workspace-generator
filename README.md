@@ -13,6 +13,7 @@ chmod +x ctf_workspace_generator.py
 
 
 # Additionally, you can use --trgt to run set-trgt trgt1 <arg>
+==note== to use this, you will need to have the set-target tool configured. See https://github.com/aslamadmani1337/set-target
 ```
 ./ctf_workspace_generator --ctfname Lame,Trick,Stocker --platform htb --trgt 10.10.17.12
 source ~/.zshrc
