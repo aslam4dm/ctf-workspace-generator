@@ -1,6 +1,6 @@
 # Install
 ```
-git clone xyz
+git clone https://github.com/aslam4dm/ctf-workspace-generator.git
 pip install -r requirements.txt
 chmod +x ctf_workspace_generator.py
 sudo cp ctf_workspace_generator.py /bin/ctf_workspace_generator 
