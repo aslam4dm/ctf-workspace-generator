@@ -1,13 +1,13 @@
+# Install
+```
+git clone xyz
+pip install -r requirements.txt
+chmod +x ctf_workspace_generator.py
+sudo cp ctf_workspace_generator.py /bin/ctf_workspace_generator 
+```
 # ctf-workspace-generator
 Create file structure for ctfs/exams/pentests etc.
 Note, this tool will create the file structure under the /home/<user>/Documents directory.
-
-# Ease of use
-for ease of use, make the script executable and then copy a version over to the /bin directory
-```
-chmod +x ctf_workspace_generator.py
-sudo cp ctf_workspace_generator.py /bin/ctf_workspace_generator
-```
 ```
 ctf_workspace_generator --ctfname <name(s)> --platform <name>
 ```
