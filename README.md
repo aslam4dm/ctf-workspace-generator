@@ -2,7 +2,7 @@
 Create file structure for ctfs/exams/pentests etc.
 
 # Examples
-`./ctf_workspace_generator` --ctfname 'mr robot' --platform thm
+`./ctf_workspace_generator --ctfname 'mr robot' --platform thm`
 `./ctf_workspace_generator --ctfname Lame,Trick,Stocker --platform htb`
 `./ctf_workspace_generator --ctfname ms01,192.1.1.1,192.1.1.2` --platform oscp` 
 
