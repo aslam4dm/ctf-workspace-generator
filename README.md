@@ -24,6 +24,13 @@ ctf_workspace_generator --ctfname ms01,192.1.1.1,192.1.1.2 --platform oscp
 # Additionally, you can use --trgt to run set-trgt trgt1 <arg>
 Note: to use this, you will need to have the set-target tool configured. See https://github.com/aslamadmani1337/set-target
 ```
-./ctf_workspace_generator --ctfname Lame,Trick,Stocker --platform htb --trgt 10.10.17.12
+./ctf_workspace_generator --ctfname Lame,Trick,Stocker --platform htb --trgt1 10.10.17.12
 source ~/.zshrc
+```
+
+# Perform Connectivity Scans on your $trgt Env Targets
+```
+./ctf_workspace_generator --trgt1 10.88.100.101 --trgt2 10.88.100.43
+source /home/<user>/.zshrc
+./ctf_workspace_generator --ctfname ms01,ms02 --platform oscp --scan-trgt1 --scan-trgt2
 ```
