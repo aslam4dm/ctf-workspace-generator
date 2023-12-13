@@ -1,5 +1,6 @@
 # ctf-workspace-generator
 Create file structure for ctfs/exams/pentests etc.
+Note, this tool will create the file structure under the /home/<user>/Documents directory.
 
 # Ease of use
 for ease of use, make the script executable and then copy a version over to the /bin directory
@@ -21,7 +22,7 @@ ctf_workspace_generator --ctfname ms01,192.1.1.1,192.1.1.2 --platform oscp
 
 
 # Additionally, you can use --trgt to run set-trgt trgt1 <arg>
-==note== to use this, you will need to have the set-target tool configured. See https://github.com/aslamadmani1337/set-target
+Note: to use this, you will need to have the set-target tool configured. See https://github.com/aslamadmani1337/set-target
 ```
 ./ctf_workspace_generator --ctfname Lame,Trick,Stocker --platform htb --trgt 10.10.17.12
 source ~/.zshrc
