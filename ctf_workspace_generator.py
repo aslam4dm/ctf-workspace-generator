@@ -81,10 +81,13 @@ def perform_ping_scan(targets):
 def con_scan(t, env=False):
     if env == False:
         # perform ping scan
-        type_text(f"$timeout 4 ping -c 4 {t}")
-        print("TARGET: ", t)
-        os.system(f"timeout 4 ping -c 4 {t}")
+        #type_text(f"$timeout 4 ping -c 4 {t}")
+        #os.system(f"timeout 4 ping -c 4 {t}")
         #subprocess.run(['timeout', '4', 'ping', '-c', '4', t])    
+
+        # self reverse lookup
+        type_text(f"timeout 5 dig -p 53 -x {t} @{t}")
+        os.system(f"timeout 5 dig -p 53 -x {t} @{t}")
         
         # perform a check against 4 common ports
         type_text(f"$nc -zv ${t} <22> <53> <80> <445>")
@@ -92,11 +95,29 @@ def con_scan(t, env=False):
         os.system(f"timeout 3 nc -zv {t} 53")
         os.system(f"timeout 3 nc -zv {t} 80")
         os.system(f"timeout 3 nc -zv {t} 445")
-        #subprocess.run(['timeout', '2', 'nc', '-zv', t, '22'])
-        #subprocess.run(['timeout', '2', 'nc', '-zv', t, '53'])
-        #subprocess.run(['timeout', '2', 'nc', '-zv', t, '80'])
-        #subprocess.run(['timeout', '2', 'nc', '-zv', t, '445'])
-
+        
+        # dns reverse lookups
+        type_text(f"timeout 4 dig -x {t} +short")
+        rev = subprocess.run(f"timeout 4 dig -x {t} +short", shell=True, capture_output=True, text=True).stdout.strip()
+        time.sleep(1)
+        print(rev)
+        # self reverse lookup
+        type_text(f"timeout 4 dig -x {t} @{t} +short")
+        self_rev = subprocess.run(f"timeout 4 dig -x {t} @{t} +short",shell=True, capture_output=True, text=True).stdout.strip()
+        time.sleep(1)
+        print(self_rev)
+        #self_rev = rev.stdout.strip()
+        
+        # Add records to /etc/hosts file???
+        if rev and self_rev:
+            #print("note: A reverse DNS lookup using dig -x will attempt to find the PTR record associated with that IP, which might not always provide a meaningful or recognizable domain name. It might return something like lhr35s02-in-f3.1e100.net. This is a reverse DNS entry associated with that IP address")
+            None 
+        elif rev and not self_rev:
+            None
+        elif self_rev and not rev:
+            None
+            
+            
     elif env == True:
         type_text(f"$timeout 4 ping -c 4 ${t}")
         os.system(f"timeout 4 ping -c 4 ${t}")
@@ -107,6 +128,32 @@ def con_scan(t, env=False):
         os.system(f"timeout 3 nc -zv ${t} 53")
         os.system(f"timeout 3 nc -zv ${t} 80")
         os.system(f"timeout 3 nc -zv ${t} 445")
+        
+        # dns reverse lookups
+        type_text(f"timeout 4 dig -x ${t} +short")
+        rev = subprocess.run(f"timeout 4 dig -x ${t} +short", shell=True, capture_output=True, text=True).stdout.strip()
+        time.sleep(1)
+        print(rev)
+        # self reverse lookup
+        type_text(f"timeout 4 dig -x {t} @${t} +short")
+        self_rev = subprocess.run(f"timeout 4 dig -x ${t} @${t} +short",shell=True, capture_output=True, text=True).stdout.strip()
+        time.sleep(1)
+        print(self_rev)
+        #self_rev = rev.stdout.strip()
+        
+        # Add records to /etc/hosts file???
+        if rev and self_rev:
+            #print("note: A reverse DNS lookup using dig -x will attempt to find the PTR record associated with that IP, which might not always provide a meaningful or recognizable domain name. It might return something like lhr35s02-in-f3.1e100.net. This is a reverse DNS entry associated with that IP address")
+            None 
+        elif rev and not self_rev:
+            None
+        elif self_rev and not rev:
+            None
+
+def connect_to_vpn(vpn_path):
+    # Continue code from here
+    os.system(f"sudo openvpn {vpn_path}")
+    return 0
 
 # Countdown function
 def countdown_func(t):
@@ -132,7 +179,7 @@ def type_text(text):
 def main():
     parser = argparse.ArgumentParser(description="Create directory structure based on arguments.")
     parser.add_argument("--ctfname", metavar="<CTFName>", help="CTF names separated by comma")
-    parser.add_argument("--platform", metavar="<Platform>", choices=['thm', 'htb', 'pgp', 'vh', 'oscp', 'other', 'bscp'], help="Platform type")
+    parser.add_argument("--platform", metavar="<Platform type (thm/htb/pgp/vh/oscp/other/bscp)>", choices=['thm', 'htb', 'pgp', 'vh', 'oscp', 'other', 'bscp'], help="Platform type")
     parser.add_argument("--trgt1", metavar="<Target1>", help="Target 1")
     parser.add_argument("--trgt2", metavar="<Target2>", help="Target 2")
     parser.add_argument("--trgt3", metavar="<Target3>", help="Target 3")
@@ -145,6 +192,7 @@ def main():
     parser.add_argument("--scan-trgt4", action="store_true", help="Perform ping scan for Target 4")
     parser.add_argument("--scan-trgt5", action="store_true", help="Perform ping scan for Target 5")
     parser.add_argument("--scan-trgtdc", action="store_true", help="Perform ping scan for Target Data Center")
+    parser.add_argument("--set-vpn", metavar="Path to vpn file", help="Path to vpn file")
     args = parser.parse_args()
 
     ctf_names = [name.strip() for name in (args.ctfname.split(',') if args.ctfname else [])]
@@ -203,5 +251,8 @@ def main():
             # invoke function passing in the list
             perform_ping_scan(valid_scan_targets)
 
+    if args.set_vpn:
+        connect_to_vpn(args.set_vpn)
+        
 if __name__ == "__main__":
     main()
