@@ -220,8 +220,8 @@ def main():
     valid_targets = {key: value for key, value in targets.items() if value is not None}
     trgts = None
     if valid_targets:
-        if rc in ['zsh', 'ZSH', 'zSh', 'bash', 'Bash', 'BASH']:
-            trgts = set_targets(valid_targets, rc.lower())
+        if args.rc in ['zsh', 'ZSH', 'zSh', 'bash', 'Bash', 'BASH']:
+            trgts = set_targets(valid_targets, args.rc.lower())
         else:
             # defaults to '.bashrc'
             trgts = set_targets(valid_targets, "bash")
