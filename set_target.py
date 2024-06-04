@@ -10,7 +10,7 @@ def error():
     exit()
 
 # now you can import and use this specific function, set_target
-def set_target(trgt_old, trgt_new, rc)
+def set_target(trgt_old, trgt_new, rc):
     try:
         if trgt_old and trgt_new:
         #if sys.argv[1] and sys.argv[2]:
