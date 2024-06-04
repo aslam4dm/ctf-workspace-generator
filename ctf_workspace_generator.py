@@ -195,7 +195,7 @@ def main():
     parser.add_argument("--scan-trgt5", action="store_true", help="Perform ping scan for Target 5")
     parser.add_argument("--scan-trgtdc", action="store_true", help="Perform ping scan for Target Data Center")
     parser.add_argument("--set-vpn", metavar="Path to vpn file", help="Path to vpn file")
-    parser.add_argument("-rc", metavar="shell profile", help="shell profile <bash>/<zsh>")
+    parser.add_argument("--rc", metavar="shell profile", help="shell profile <bash>/<zsh>")
     args = parser.parse_args()
 
     ctf_names = [name.strip() for name in (args.ctfname.split(',') if args.ctfname else [])]
