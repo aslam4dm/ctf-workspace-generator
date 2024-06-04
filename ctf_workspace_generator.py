@@ -52,7 +52,7 @@ def set_targets(targets, rc):
     trgts = {}
     for key, target in targets.items():
         trgts[key] = target
-        set_target({key} {target} {rc})
+        set_target({key}, {target}, {rc})
         # os.system(f"set-target {key} {target}")
     return trgts
 
