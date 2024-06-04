@@ -7,6 +7,7 @@ from tqdm import tqdm
 import time
 import sys
 import subprocess
+from set_target import set_target
 
 def create_directory_structure(base_path, platform, ctf_names):
     directory_structure = {
@@ -47,11 +48,12 @@ def create_directory_structure(base_path, platform, ctf_names):
 
     return platform_path
 
-def set_targets(targets):
+def set_targets(targets, rc):
     trgts = {}
     for key, target in targets.items():
         trgts[key] = target
-        os.system(f"set-target {key} {target}")
+        set_target({key} {target} {rc})
+        # os.system(f"set-target {key} {target}")
     return trgts
 
 def perform_ping_scan(targets):
@@ -193,6 +195,7 @@ def main():
     parser.add_argument("--scan-trgt5", action="store_true", help="Perform ping scan for Target 5")
     parser.add_argument("--scan-trgtdc", action="store_true", help="Perform ping scan for Target Data Center")
     parser.add_argument("--set-vpn", metavar="Path to vpn file", help="Path to vpn file")
+    parser.add_argument("-rc", metavar="shell profile", help="shell profile <bash>/<zsh>")
     args = parser.parse_args()
 
     ctf_names = [name.strip() for name in (args.ctfname.split(',') if args.ctfname else [])]
@@ -217,8 +220,12 @@ def main():
     valid_targets = {key: value for key, value in targets.items() if value is not None}
     trgts = None
     if valid_targets:
-        trgts = set_targets(valid_targets)
-
+        if rc in ['zsh', 'ZSH', 'zSh', 'bash', 'Bash', 'BASH']:
+            trgts = set_targets(valid_targets, rc.lower())
+        else:
+            # defaults to '.bashrc'
+            trgts = set_targets(valid_targets, "bash")
+            
     scan_targets = {
         "trgt1": args.scan_trgt1,
         "trgt2": args.scan_trgt2,
