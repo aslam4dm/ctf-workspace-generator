@@ -1,5 +1,4 @@
 #!/usr/bin/env python
-
 import os
 import argparse
 from colorama import Fore, Style
@@ -7,6 +6,8 @@ from tqdm import tqdm
 import time
 import sys
 import subprocess
+from http.server import *
+from set_target import set_target
 
 def create_directory_structure(base_path, platform, ctf_names):
     directory_structure = {
@@ -47,11 +48,26 @@ def create_directory_structure(base_path, platform, ctf_names):
 
     return platform_path
 
-def set_targets(targets):
+# For best results, make sure to declare the variables in your .bashrc and zshrc profiles. Also make sure to export them. Read README.md for more instructions. 
+# argument 'rc' should come in as 'bash' or 'zsh' - function accounts for uppercase versions too, for no reason whatsoever...
+def set_targets(targets, rc):
     trgts = {}
+    print(targets)
     for key, target in targets.items():
         trgts[key] = target
-        os.system(f"set-target {key} {target}")
+        #os.system(f"set-target {key} {target}")
+        #print(key)
+        #print(target)
+        if rc in ['bash', 'BASH']:
+            print(f"{Fore.CYAN}Setting env variables in ~/.bashrc{Style.RESET_ALL}")
+            set_target({key}, {target}, 'bash')
+        elif rc in ['zsh', 'ZSH']:
+            print(f"{Fore.CYAN}Setting env variables in ~/.zsh{Style.RESET_ALL}")
+            set_target({key}, {target}, 'zsh')
+        else:
+            # defaults to bash shell
+            print(f"{Fore.CYAN}Setting env variables in default path: ~/.bashrc{Style.RESET_ALL}")
+            set_target({key}, {target}, 'bash')
     return trgts
 
 def perform_ping_scan(targets):
@@ -117,7 +133,6 @@ def con_scan(t, env=False):
         elif self_rev and not rev:
             None
             
-            
     elif env == True:
         type_text(f"$timeout 4 ping -c 4 ${t}")
         os.system(f"timeout 4 ping -c 4 ${t}")
@@ -150,6 +165,42 @@ def con_scan(t, env=False):
         elif self_rev and not rev:
             None
 
+# takes optional path and port. If the port value is None, presumes the port is not specified in the argument
+def start_web_server(path, port):
+    # if the path is specified and the port is specified
+    if type(path) == str and port != None:
+        # serve the HTTP server at the specified root web path
+        os.chdir(path)
+        httpd = HTTPServer(('0.0.0.0', int(port)), SimpleHTTPRequestHandler)        
+        print(f"{Fore.CYAN}\nNote: Server Listening on 0.0.0.0:{port} : path: {path} : see directory tree below{Style.RESET_ALL}")
+        os.system("tree")
+        httpd.serve_forever()
+    
+    # If the path is not specified and the port is
+    elif type(path) != str and port:
+    	# serve the HTTP server at the specified root web path
+        httpd = HTTPServer(('0.0.0.0', int(port)), SimpleHTTPRequestHandler)        
+        print(f"{Fore.CYAN}\nNote: Server Listening on 0.0.0.0:{port} : path: . : see directory tree below{Style.RESET_ALL}")
+        os.system("tree")
+        httpd.serve_forever()
+        
+    # If the path is specified but the port is not
+    elif type(path) == str and port == None:
+        # serve the HTTP server at the specified root web path
+        os.chdir(path)
+        httpd = HTTPServer(('0.0.0.0', 80), SimpleHTTPRequestHandler)        
+        print(f"{Fore.CYAN}\nNote: Server Listening on 0.0.0.0: 80 : path: {path} : see directory tree below{Style.RESET_ALL}")
+        os.system("tree")
+        httpd.serve_forever()
+        
+    # if neither the path nor the port are specified
+    else:
+    	# serve the HTTP server at the CWD
+        httpd = HTTPServer(('0.0.0.0', 80), SimpleHTTPRequestHandler)
+        print(f"{Fore.CYAN}\nNote: Server Listening on 0.0.0.0:80 : path: . : see directory tree below{Style.RESET_ALL}")
+        os.system("tree")
+        httpd.serve_forever()
+        
 def connect_to_vpn(vpn_path):
     # Continue code from here
     os.system(f"sudo openvpn {vpn_path}")
@@ -180,12 +231,15 @@ def main():
     parser = argparse.ArgumentParser(description="Create directory structure based on arguments.")
     parser.add_argument("--ctfname", metavar="<CTFName>", help="CTF names separated by comma")
     parser.add_argument("--platform", metavar="<Platform type (thm/htb/pgp/vh/oscp/other/bscp)>", choices=['thm', 'htb', 'pgp', 'vh', 'oscp', 'other', 'bscp'], help="Platform type")
+    parser.add_argument("--start-server", nargs="?", const=True, default=False, help="start server at [default] cwd, or specified path")
+    parser.add_argument("--server-port", help="if --start-server is selected, you can specify a port number for the http server to listen on")
     parser.add_argument("--trgt1", metavar="<Target1>", help="Target 1")
     parser.add_argument("--trgt2", metavar="<Target2>", help="Target 2")
     parser.add_argument("--trgt3", metavar="<Target3>", help="Target 3")
     parser.add_argument("--trgt4", metavar="<Target4>", help="Target 4")
     parser.add_argument("--trgt5", metavar="<Target5>", help="Target 5")
     parser.add_argument("--trgtdc", metavar="<TargetDC>", help="Target Data Center")
+    parser.add_argument("--rc", metavar="<profile file>", help="Profile to set the $trgt variables in <bash/zsh>")
     parser.add_argument("--scan-trgt1", action="store_true", help="Perform ping scan for Target 1")
     parser.add_argument("--scan-trgt2", action="store_true", help="Perform ping scan for Target 2")
     parser.add_argument("--scan-trgt3", action="store_true", help="Perform ping scan for Target 3")
@@ -217,7 +271,12 @@ def main():
     valid_targets = {key: value for key, value in targets.items() if value is not None}
     trgts = None
     if valid_targets:
-        trgts = set_targets(valid_targets)
+        if args.rc in ['b', 'bash', 'Bash', 'BASH']:
+            trgts = set_targets(valid_targets, 'bash')
+        elif args.rc in ['z', 'zsh', 'Zsh', 'ZSH']:
+            trgts = set_targets(valid_targets, 'zsh')
+        else:
+            trgts = set_targets(valid_targets, 'bash')
 
     scan_targets = {
         "trgt1": args.scan_trgt1,
@@ -251,6 +310,16 @@ def main():
             # invoke function passing in the list
             perform_ping_scan(valid_scan_targets)
 
+    if args.start_server:
+        if args.server_port:
+    	    if args.server_port in str(list(range(65535))):
+    	        start_web_server(args.start_server, int(args.server_port))
+    	    else:
+    	        # default port: port 80
+    	        start_web_server(args.start_server, None)
+        else:
+    	    # default port: port 80
+    	    start_web_server(args.start_server, None)
     if args.set_vpn:
         connect_to_vpn(args.set_vpn)
         
