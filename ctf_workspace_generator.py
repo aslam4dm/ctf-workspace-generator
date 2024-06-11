@@ -59,14 +59,14 @@ def set_targets(targets, rc):
         #print(key)
         #print(target)
         if rc in ['bash', 'BASH']:
-            print(f"{Fore.CYAN}Setting env variables in ~/.bashrc{Style.RESET_ALL}")
+            print(f"{Fore.CYAN}Setting 'trgt' environment variables in ~/.bashrc{Style.RESET_ALL}")
             set_target({key}, {target}, 'bash')
         elif rc in ['zsh', 'ZSH']:
-            print(f"{Fore.CYAN}Setting env variables in ~/.zsh{Style.RESET_ALL}")
+            print(f"{Fore.CYAN}Setting 'trgt' environment variables in ~/.zsh{Style.RESET_ALL}")
             set_target({key}, {target}, 'zsh')
         else:
             # defaults to bash shell
-            print(f"{Fore.CYAN}Setting env variables in default path: ~/.bashrc{Style.RESET_ALL}")
+            print(f"{Fore.CYAN}Setting 'trgt' environment variables in default path: ~/.bashrc{Style.RESET_ALL}")
             set_target({key}, {target}, 'bash')
     return trgts
 
@@ -75,7 +75,12 @@ def perform_ping_scan(targets):
     if isinstance(targets, str):
         target = targets
         print(f"{Fore.CYAN}Connectivity scans will be performed against the following:{Style.RESET_ALL} {Style.BRIGHT + Fore.MAGENTA}{target}{Style.RESET_ALL} {Fore.RED}CTRL-C now to stop.{Style.RESET_ALL}")
-        countdown_func(3)
+        cf = countdown_func(3)
+        # if user hits ctrl-C, skip stage
+        if cf == False:
+            #skip_stage()
+            return None
+            
         print(f"{Style.BRIGHT + Fore.CYAN}\nConnectivity check for: {target}{Style.RESET_ALL}")
         # connectivity check
         con_scan(target)
@@ -87,7 +92,11 @@ def perform_ping_scan(targets):
             except: pass
         
         print(f"{Fore.CYAN}Connectivity scans will be performed against the following:{Style.RESET_ALL} {Style.BRIGHT + Fore.MAGENTA}{converted}{Style.RESET_ALL} {Fore.RED}CTRL-C now to stop.{Style.RESET_ALL}")
-        countdown_func(3)
+        cf = countdown_func(3)
+        if cf == False:
+            #skip_stage()
+            return None
+            
         for target in targets:
             print(f"{Style.BRIGHT + Fore.CYAN}\nConnectivity check for: {os.getenv(target)}{Style.RESET_ALL}")
             # connectivity check
@@ -97,28 +106,38 @@ def perform_ping_scan(targets):
 def con_scan(t, env=False):
     if env == False:
         # perform ping scan
-        #type_text(f"$timeout 4 ping -c 4 {t}")
-        #os.system(f"timeout 4 ping -c 4 {t}")
+        if type_text(f"$timeout 4 ping -c 4 {t}") == False:
+            #skip_stage()
+            return None
+        os.system(f"timeout 4 ping -c 4 {t}")
         #subprocess.run(['timeout', '4', 'ping', '-c', '4', t])    
 
         # self reverse lookup
-        type_text(f"timeout 5 dig -p 53 -x {t} @{t}")
+        if type_text(f"timeout 5 dig -p 53 -x {t} @{t}") == False:
+            #skip_stage()
+            return None
         os.system(f"timeout 5 dig -p 53 -x {t} @{t}")
         
         # perform a check against 4 common ports
-        type_text(f"$nc -zv ${t} <22> <53> <80> <445>")
+        if type_text(f"$nc -zv ${t} <22> <53> <80> <445>") == False:
+            #skip_stage()
+            return None
         os.system(f"timeout 3 nc -zv {t} 22")
         os.system(f"timeout 3 nc -zv {t} 53")
         os.system(f"timeout 3 nc -zv {t} 80")
         os.system(f"timeout 3 nc -zv {t} 445")
         
         # dns reverse lookups
-        type_text(f"timeout 4 dig -x {t} +short")
+        if type_text(f"timeout 4 dig -x {t} +short") == False:
+            #skip_stage()
+            return None
         rev = subprocess.run(f"timeout 4 dig -x {t} +short", shell=True, capture_output=True, text=True).stdout.strip()
         time.sleep(1)
         print(rev)
         # self reverse lookup
-        type_text(f"timeout 4 dig -x {t} @{t} +short")
+        if type_text(f"timeout 4 dig -x {t} @{t} +short") == False:
+            #skip_stage()
+            return None
         self_rev = subprocess.run(f"timeout 4 dig -x {t} @{t} +short",shell=True, capture_output=True, text=True).stdout.strip()
         time.sleep(1)
         print(self_rev)
@@ -134,23 +153,31 @@ def con_scan(t, env=False):
             None
             
     elif env == True:
-        type_text(f"$timeout 4 ping -c 4 ${t}")
+        if type_text(f"$timeout 4 ping -c 4 ${t}") == False:
+            #skip_stage()
+            return None
         os.system(f"timeout 4 ping -c 4 ${t}")
         
         # perform a check against 4 common ports
-        type_text(f"$timeout 3 nc -zv ${t} <22> <53> <80> <445>")
+        if type_text(f"$timeout 3 nc -zv ${t} <22> <53> <80> <445>") == False:
+            #skip_stage()
+            return None
         os.system(f"timeout 3 nc -zv ${t} 22")
         os.system(f"timeout 3 nc -zv ${t} 53")
         os.system(f"timeout 3 nc -zv ${t} 80")
         os.system(f"timeout 3 nc -zv ${t} 445")
         
         # dns reverse lookups
-        type_text(f"timeout 4 dig -x ${t} +short")
+        if type_text(f"timeout 4 dig -x ${t} +short") == False:
+            #skip_stage()
+            return None
         rev = subprocess.run(f"timeout 4 dig -x ${t} +short", shell=True, capture_output=True, text=True).stdout.strip()
         time.sleep(1)
         print(rev)
         # self reverse lookup
-        type_text(f"timeout 4 dig -x {t} @${t} +short")
+        if type_text(f"timeout 4 dig -x {t} @${t} +short") == False:
+            #skip_stage()
+            return None
         self_rev = subprocess.run(f"timeout 4 dig -x ${t} @${t} +short",shell=True, capture_output=True, text=True).stdout.strip()
         time.sleep(1)
         print(self_rev)
@@ -165,24 +192,37 @@ def con_scan(t, env=False):
         elif self_rev and not rev:
             None
 
+
+def graceful_exit():
+    print("\nAs-Salaam-Alaikum, Peace be unto you!")
+
+
 # takes optional path and port. If the port value is None, presumes the port is not specified in the argument
 def start_web_server(path, port):
+    time.sleep(0.2)
+    print("\nStaring server...")
+    time.sleep(1)
     # if the path is specified and the port is specified
     if type(path) == str and port != None:
         # serve the HTTP server at the specified root web path
         os.chdir(path)
         httpd = HTTPServer(('0.0.0.0', int(port)), SimpleHTTPRequestHandler)        
-        print(f"{Fore.CYAN}\nNote: Server Listening on 0.0.0.0:{port} : path: {path} : see directory tree below{Style.RESET_ALL}")
+        print(f"{Fore.MAGENTA}{Style.BRIGHT}\nNote: Server Listening on 0.0.0.0:{port} : path: {path} : see directory tree below{Style.RESET_ALL}")
         os.system("tree")
-        httpd.serve_forever()
-    
+        try:
+            httpd.serve_forever()
+        except KeyboardInterrupt:
+            graceful_exit()
     # If the path is not specified and the port is
     elif type(path) != str and port:
     	# serve the HTTP server at the specified root web path
         httpd = HTTPServer(('0.0.0.0', int(port)), SimpleHTTPRequestHandler)        
         print(f"{Fore.CYAN}\nNote: Server Listening on 0.0.0.0:{port} : path: . : see directory tree below{Style.RESET_ALL}")
         os.system("tree")
-        httpd.serve_forever()
+        try:
+            httpd.serve_forever()
+        except KeyboardInterrupt:
+            graceful_exit()
         
     # If the path is specified but the port is not
     elif type(path) == str and port == None:
@@ -191,7 +231,10 @@ def start_web_server(path, port):
         httpd = HTTPServer(('0.0.0.0', 80), SimpleHTTPRequestHandler)        
         print(f"{Fore.CYAN}\nNote: Server Listening on 0.0.0.0: 80 : path: {path} : see directory tree below{Style.RESET_ALL}")
         os.system("tree")
-        httpd.serve_forever()
+        try:
+            httpd.serve_forever()
+        except KeyboardInterrupt:
+            graceful_exit()
         
     # if neither the path nor the port are specified
     else:
@@ -207,6 +250,7 @@ def connect_to_vpn(vpn_path):
     return 0
 
 # Countdown function
+# Function use: if countdown_func(10) == False: return None (meaning if the user hit ctrl-C skip the caller function)
 def countdown_func(t):
     try:
         for i in range(t, -1, -1):
@@ -214,19 +258,39 @@ def countdown_func(t):
             sys.stdout.flush()  # Flush the output to show the countdown immediately
             time.sleep(1)  # Wait for 1 second
         sys.stdout.write("\r{} ".format(''))
-        sys.stdout.flush()             
+        sys.stdout.flush()
+    # if the user hits ctrl-C during the countdown - return False   
     except KeyboardInterrupt:
-        print(f"{Fore.CYAN}\nNote: `source /home/{os.getlogin()}/.zshrc` to update the session's env.{Style.RESET_ALL}\n{Fore.RED}Exiting, Goodbye!{Style.RESET_ALL}")
-        exit(0)
+        skip_stage()
+        time.sleep(1)
+        return False
+    return True
 
 # cool function that makes it look like text is being typed
+# function use: if type_text("mytext") == False: return None (meaning if the user hit ctrl-C skip the caller function)
 def type_text(text):
-    for char in text:
-        sys.stdout.write(char)
-        sys.stdout.flush()  # Flush the output to display the character immediately
-        time.sleep(0.06)  # Adjust the sleep duration to change typing speed
-    print()  # Move to the next line after typing is complete
+    try:
+        for char in text:
+            sys.stdout.write(char)
+            sys.stdout.flush()  # Flush the output to display the character immediately
+            time.sleep(0.06)  # Adjust the sleep duration to change typing speed
+        print()  # Move to the next line after typing is complete
+        
+    # if the user hits ctrl-C during the text type - this will skip the section
+    except KeyboardInterrupt:
+        skip_stage()
+        return False
 
+def skip_stage():
+    print(f"\n{Fore.RED}skipping stage...{Style.RESET_ALL}")
+    time.sleep(1.5)
+
+# General order of functions:
+# 1. Create Directories based on ctfname and platform
+# 2. Set environment variable targets
+# 3. Perform a scan on the targets specified or the existing trgt environment variables
+# 4. Start an HTTP Server on a given path and port
+# 5. Start the specified VPN - Note: This is unusable at the moment 
 def main():
     parser = argparse.ArgumentParser(description="Create directory structure based on arguments.")
     parser.add_argument("--ctfname", metavar="<CTFName>", help="CTF names separated by comma")
@@ -320,6 +384,7 @@ def main():
         else:
     	    # default port: port 80
     	    start_web_server(args.start_server, None)
+    	    
     if args.set_vpn:
         connect_to_vpn(args.set_vpn)
         
